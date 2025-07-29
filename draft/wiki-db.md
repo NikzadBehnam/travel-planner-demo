@@ -131,6 +131,6 @@
     - and on that file add
       AUTH_GITHUB_ID = .....
       AUTH_GITHUB_SECRET = .....
-    - and then run npm exec auth secret to generate AUTH_SECRET in .env.local
+    - and then run 'npm exec auth secret' to generate AUTH_SECRET in .env.local
 
   NOW YOU CAN CLICK ON LOGIN BUTTON AND LOG IN YO THE APP
