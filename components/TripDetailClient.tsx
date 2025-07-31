@@ -1,15 +1,21 @@
 "use client";
 
-import { Trip } from "@/app/generated/prisma";
+import { Location, Trip } from "@/app/generated/prisma";
 import Image from "next/image";
-import { Calendar, Plus } from "lucide-react";
+import { Calendar, MapPin, Plus } from "lucide-react";
 import Link from "next/link";
 import { Button } from "./ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { useState } from "react";
+import Map from "@/components/Map";
+import SortableItinerary from "./sortable-list/SortableItinerary";
+
+export type TripWithLocation = Trip & {
+  locations: Location[];
+};
 
 interface TripDetailClientProps {
-  trip: Trip;
+  trip: TripWithLocation;
 }
 
 const tripDays = (trip: Trip) => {
@@ -35,7 +41,6 @@ export default function TripDetailClient({ trip }: TripDetailClientProps) {
             src={trip.imageUrl}
             className="object-cover"
             fill
-            priority
           ></Image>
         </div>
       )}
@@ -71,7 +76,7 @@ export default function TripDetailClient({ trip }: TripDetailClientProps) {
             </TabsTrigger>
           </TabsList>
           <TabsContent value="overview" className="space-y-6">
-            <div className="grid md:grid-cols-2 gap-6">
+            <div className="grid md:grid-cols-2 gap-6 ">
               <div>
                 <h2 className="text-2xl font-semibold mb-4">Trip Summary</h2>
                 <div className="space-y-4">
@@ -86,10 +91,53 @@ export default function TripDetailClient({ trip }: TripDetailClientProps) {
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-start"></div>
+                  <div className="flex items-start">
+                    <MapPin className="h-6 w-6 mr-3 text-gray-500" />
+                    <div>
+                      <p>Destinations</p>
+                      <p>{`${trip.locations.length} ${
+                        trip.locations.length === 1 ? "location" : "locations"
+                      }`}</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="h-72 rounded-lg overflow-hidden shadow my-4">
+                  <Map itineraries={trip.locations} />
+                </div>
+                {trip.locations.length === 0 && (
+                  <div className="text-center p-4">
+                    <p>Add locations to see them on the map.</p>
+                    <Link href={`/trips/${trip.id}/itinerary/new`}>
+                      <Button>
+                        <Plus className="h-5 w-5 mr-2" /> Add location
+                      </Button>
+                    </Link>
+                  </div>
+                )}
+                <div>
+                  <p className="text-gray-600 leading-relaxed">
+                    {trip.description}
+                  </p>
                 </div>
               </div>
             </div>
+          </TabsContent>
+          <TabsContent value="itinerary">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-2xl font-semibold">Full Itinerary</h2>
+            </div>
+            {trip.locations.length === 0 ? (
+              <div className="text-center p-4">
+                <p>Add locations to see them on the itinerary.</p>
+                <Link href={`/trips/${trip.id}/itinerary/new`}>
+                  <Button>
+                    <Plus className="h-5 w-5 mr-2" /> Add location
+                  </Button>
+                </Link>
+              </div>
+            ) : (
+              <SortableItinerary locations={trip.locations} tripId={trip.id} />
+            )}
           </TabsContent>
         </Tabs>
       </div>
